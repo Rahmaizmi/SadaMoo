@@ -1,4 +1,5 @@
 package com.example.sadamoo.users
+
 import com.example.sadamoo.R
 import android.graphics.Color
 import android.widget.ImageView
@@ -8,6 +9,7 @@ import android.widget.TextView
 import com.google.firebase.firestore.FirebaseFirestore
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.sadamoo.databinding.ActivityMainBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -35,11 +37,11 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         val currentUser = auth.currentUser
         if (currentUser == null) {
-            android.util.Log.e("MainActivity", "Tidak ada user yang login, kembali ke LoginActivity")
+            Log.e("MainActivity", "Tidak ada user yang login, kembali ke LoginActivity")
             startActivity(Intent(this, com.example.sadamoo.LoginActivity::class.java))
             finish()
         } else {
-            android.util.Log.d("MainActivity", "User login: ${currentUser.uid}")
+            Log.d("MainActivity", "User login: ${currentUser.uid}")
         }
     }
 
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         val currentUser = auth.currentUser
         if (currentUser != null) {
             val uid = currentUser.uid
-            android.util.Log.d("MainActivity", "UID user login: $uid")
+            Log.d("MainActivity", "UID user login: $uid")
 
             val db = FirebaseFirestore.getInstance()
             db.collection("users").document(uid)
@@ -56,19 +58,22 @@ class MainActivity : AppCompatActivity() {
                 .addOnSuccessListener { document ->
                     if (document != null && document.exists()) {
                         val nama = document.getString("name") ?: "User"
-                        android.util.Log.d("MainActivity", "Data Firestore: ${document.data}")
+                        Log.d("MainActivity", "Data Firestore: ${document.data}")
                         binding.tvWelcome.text = "Selamat Datang $nama!"
                     } else {
-                        android.util.Log.e("MainActivity", "Dokumen tidak ditemukan untuk UID: $uid")
+                        Log.e(
+                            "MainActivity",
+                            "Dokumen tidak ditemukan untuk UID: $uid"
+                        )
                         binding.tvWelcome.text = "Selamat Datang!"
                     }
                 }
                 .addOnFailureListener { e ->
-                    android.util.Log.e("MainActivity", "Gagal ambil data: ${e.message}", e)
+                    Log.e("MainActivity", "Gagal ambil data: ${e.message}", e)
                     binding.tvWelcome.text = "Selamat Datang!"
                 }
         } else {
-            android.util.Log.e("MainActivity", "Tidak ada user yang login!")
+            Log.e("MainActivity", "Tidak ada user yang login!")
         }
     }
 
@@ -120,7 +125,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setActiveNav(activeNav: LinearLayout) {
-        val allNavs = listOf(binding.navBeranda, binding.navInformasi, binding.navRiwayat, binding.navProfil)
+        val allNavs =
+            listOf(binding.navBeranda, binding.navInformasi, binding.navRiwayat, binding.navProfil)
         val activeColor = Color.parseColor("#4A90E2") // Biru
         val inactiveColor = Color.parseColor("#B0B0B0") // Abu-abu
 

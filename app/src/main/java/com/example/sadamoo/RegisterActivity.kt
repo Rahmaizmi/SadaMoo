@@ -62,8 +62,15 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun registerUser(nama: String, email: String, password: String) {
+        // Show loading
+        binding.btnDaftar.isEnabled = false
+        binding.btnDaftar.text = "Mendaftar..."
+
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
+                binding.btnDaftar.isEnabled = true
+                binding.btnDaftar.text = "Daftar"
+
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     user?.let {
@@ -71,8 +78,16 @@ class RegisterActivity : AppCompatActivity() {
                         saveUserToFirestore(it.uid, nama, email)
                     }
                 } else {
-                    Toast.makeText(this, "Registrasi gagal: ${task.exception?.message}",
-                        Toast.LENGTH_SHORT).show()
+                    val errorMessage = when {
+                        task.exception?.message?.contains("network error") == true ->
+                            "Periksa koneksi internet Anda"
+                        task.exception?.message?.contains("email address is already in use") == true ->
+                            "Email sudah terdaftar"
+                        task.exception?.message?.contains("weak password") == true ->
+                            "Password terlalu lemah"
+                        else -> "Registrasi gagal: ${task.exception?.message}"
+                    }
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
                 }
             }
     }
@@ -81,7 +96,10 @@ class RegisterActivity : AppCompatActivity() {
         val userData = hashMapOf(
             "name" to nama,
             "email" to email,
-            "role" to "user", // Default role adalah user
+            "role" to "user",
+            "subscriptionStatus" to "trial", // Set trial untuk user baru
+            "trialStartDate" to com.google.firebase.Timestamp.now(), // Start trial
+            "scanCount" to 0,
             "createdAt" to com.google.firebase.Timestamp.now(),
             "isActive" to true
         )
@@ -89,7 +107,7 @@ class RegisterActivity : AppCompatActivity() {
         firestore.collection("users").document(userId)
             .set(userData)
             .addOnSuccessListener {
-                Toast.makeText(this, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Pendaftaran berhasil! Trial 7 hari dimulai.", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             }

@@ -62,8 +62,15 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun loginUser(email: String, password: String) {
+        // Show loading
+        binding.btnLogin.isEnabled = false
+        binding.btnLogin.text = "Masuk..."
+
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
+                binding.btnLogin.isEnabled = true
+                binding.btnLogin.text = "Masuk"
+
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     user?.let {
@@ -71,8 +78,18 @@ class LoginActivity : AppCompatActivity() {
                         checkUserRole(it.uid)
                     }
                 } else {
-                    Toast.makeText(this, "Login gagal: ${task.exception?.message}",
-                        Toast.LENGTH_SHORT).show()
+                    val errorMessage = when {
+                        task.exception?.message?.contains("network error") == true ->
+                            "Periksa koneksi internet Anda"
+                        task.exception?.message?.contains("no user record") == true ->
+                            "Email tidak terdaftar"
+                        task.exception?.message?.contains("wrong password") == true ->
+                            "Password salah"
+                        task.exception?.message?.contains("too many requests") == true ->
+                            "Terlalu banyak percobaan. Coba lagi nanti"
+                        else -> "Login gagal: ${task.exception?.message}"
+                    }
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
                 }
             }
     }
@@ -87,12 +104,10 @@ class LoginActivity : AppCompatActivity() {
                     when (role) {
                         "admin" -> {
                             Toast.makeText(this, "Login berhasil sebagai Admin!", Toast.LENGTH_SHORT).show()
-                            // Arahkan ke AdminDashboardActivity
                             startActivity(Intent(this, AdminActivity::class.java))
                         }
                         "user" -> {
                             Toast.makeText(this, "Login berhasil!", Toast.LENGTH_SHORT).show()
-                            // Arahkan ke MainActivity (user dashboard)
                             startActivity(Intent(this, MainActivity::class.java))
                         }
                     }
