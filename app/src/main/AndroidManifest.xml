@@ -41,9 +41,9 @@
         </activity>
 
         <!-- Activity lain -->
-        <activity android:name=".MainActivitybawaan" />
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterActivity" />
+        <activity android:name=".users.InformationActivity" />
     </application>
 
 </manifest>

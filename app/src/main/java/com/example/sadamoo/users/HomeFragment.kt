@@ -1,5 +1,4 @@
 package com.example.sadamoo.users.fragments
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View

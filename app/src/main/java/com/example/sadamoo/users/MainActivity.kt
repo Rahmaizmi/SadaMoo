@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.navInformasi.setOnClickListener {
             setActiveNav(binding.navInformasi)
-            // startActivity(Intent(this, InformationActivity::class.java))
+            startActivity(Intent(this, InformationActivity::class.java))
         }
 
         binding.navRiwayat.setOnClickListener {
