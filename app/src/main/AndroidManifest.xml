@@ -44,6 +44,7 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".users.InformationActivity" />
+        <activity android:name=".users.DiseaseDetailActivity" />
     </application>
 
 </manifest>

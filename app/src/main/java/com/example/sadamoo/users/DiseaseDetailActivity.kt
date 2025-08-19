@@ -1,41 +1,38 @@
 package com.example.sadamoo.users
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.sadamoo.R
-import com.example.sadamoo.databinding.ActivityInformationBinding
-import com.example.sadamoo.users.adapters.DiseaseAdapter
+import com.example.sadamoo.databinding.ActivityDiseaseDetailBinding
 import com.example.sadamoo.users.models.Disease
 
-class InformationActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityInformationBinding
-    private lateinit var diseaseAdapter: DiseaseAdapter
-    private var allDiseases = listOf<Disease>()
-    private var filteredDiseases = listOf<Disease>()
+class DiseaseDetailActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityDiseaseDetailBinding
+    private lateinit var disease: Disease
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityInformationBinding.inflate(layoutInflater)
+        binding = ActivityDiseaseDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupBottomNavigation()
-        setupDiseaseData()
-        setupRecyclerView()
-        setupSearch()
+        val diseaseId = intent.getStringExtra("disease_id")
+        if (diseaseId != null) {
+            loadDiseaseDetail(diseaseId)
+            setupUI()
+            setupBottomNavigation()
+        } else {
+            finish()
+        }
     }
 
-    private fun setupDiseaseData() {
-        allDiseases = listOf(
-            Disease(
+    private fun loadDiseaseDetail(diseaseId: String) {
+        // Load disease data berdasarkan ID
+        disease = when (diseaseId) {
+            "cacingan" -> Disease(
                 id = "cacingan",
                 name = "Cacingan",
                 scientificName = "Helminthiasis",
@@ -76,9 +73,9 @@ class InformationActivity : AppCompatActivity() {
                 imageRes = R.drawable.disease_cacingan,
                 isContagious = true,
                 affectedAnimals = listOf("Sapi", "Kerbau", "Kambing", "Domba")
-            ),
+            )
 
-            Disease(
+            "pmk" -> Disease(
                 id = "pmk",
                 name = "Penyakit Mulut dan Kuku (PMK)",
                 scientificName = "Foot and Mouth Disease (FMD)",
@@ -122,9 +119,9 @@ class InformationActivity : AppCompatActivity() {
                 imageRes = R.drawable.disease_pmk,
                 isContagious = true,
                 affectedAnimals = listOf("Sapi", "Kerbau", "Babi", "Kambing", "Domba")
-            ),
+            )
 
-            Disease(
+            "lsd" -> Disease(
                 id = "lsd",
                 name = "Lumpy Skin Disease (LSD)",
                 scientificName = "Lumpy Skin Disease",
@@ -169,65 +166,112 @@ class InformationActivity : AppCompatActivity() {
                 isContagious = true,
                 affectedAnimals = listOf("Sapi", "Kerbau")
             )
-        )
 
-        filteredDiseases = allDiseases
-    }
-
-    private fun setupRecyclerView() {
-        diseaseAdapter = DiseaseAdapter(filteredDiseases) { disease ->
-            // Navigate to detail activity
-            val intent = Intent(this, DiseaseDetailActivity::class.java)
-            intent.putExtra("disease_id", disease.id)
-            startActivity(intent)
-        }
-
-        binding.rvDiseases.apply {
-            layoutManager = LinearLayoutManager(this@InformationActivity)
-            adapter = diseaseAdapter
+            else -> return // Invalid disease ID
         }
     }
 
-    private fun setupSearch() {
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+    private fun setupUI() {
+        binding.apply {
+            // Header info
+            tvDiseaseName.text = disease.name
+            tvScientificName.text = disease.scientificName
+            tvDescription.text = disease.description
+            ivDiseaseImage.setImageResource(disease.imageRes)
 
-            override fun afterTextChanged(s: Editable?) {
-                val query = s.toString().lowercase().trim()
-                filteredDiseases = if (query.isEmpty()) {
-                    allDiseases
-                } else {
-                    allDiseases.filter { disease ->
-                        disease.name.lowercase().contains(query) ||
-                                disease.symptoms.any { it.lowercase().contains(query) } ||
-                                disease.description.lowercase().contains(query)
-                    }
-                }
-                diseaseAdapter.updateData(filteredDiseases)
+            // Severity and contagious status
+            tvSeverity.text = disease.severity
+            tvContagious.text = if (disease.isContagious) "Menular" else "Tidak Menular"
+
+            // Set severity color
+            val severityColor = when (disease.severity) {
+                "Ringan" -> android.R.color.holo_green_dark
+                "Sedang" -> android.R.color.holo_orange_dark
+                "Berat" -> android.R.color.holo_red_dark
+                else -> android.R.color.darker_gray
             }
-        })
+            tvSeverity.setTextColor(getColor(severityColor))
+            tvContagious.setTextColor(
+                if (disease.isContagious) getColor(android.R.color.holo_red_dark)
+                else getColor(android.R.color.holo_green_dark)
+            )
+
+            // Populate lists
+            populateSymptoms()
+            populateCauses()
+            populateTreatment()
+            populatePrevention()
+            populateAffectedAnimals()
+        }
+    }
+
+    private fun populateSymptoms() {
+        binding.layoutSymptoms.removeAllViews()
+        disease.symptoms.forEach { symptom ->
+            val textView = createBulletTextView(symptom)
+            binding.layoutSymptoms.addView(textView)
+        }
+    }
+
+    private fun populateCauses() {
+        binding.layoutCauses.removeAllViews()
+        disease.causes.forEach { cause ->
+            val textView = createBulletTextView(cause)
+            binding.layoutCauses.addView(textView)
+        }
+    }
+
+    private fun populateTreatment() {
+        binding.layoutTreatment.removeAllViews()
+        disease.treatment.forEach { treatment ->
+            val textView = createBulletTextView(treatment)
+            binding.layoutTreatment.addView(textView)
+        }
+    }
+
+    private fun populatePrevention() {
+        binding.layoutPrevention.removeAllViews()
+        disease.prevention.forEach { prevention ->
+            val textView = createBulletTextView(prevention)
+            binding.layoutPrevention.addView(textView)
+        }
+    }
+
+    private fun populateAffectedAnimals() {
+        binding.layoutAffectedAnimals.removeAllViews()
+        disease.affectedAnimals.forEach { animal ->
+            val textView = createBulletTextView(animal)
+            binding.layoutAffectedAnimals.addView(textView)
+        }
+    }
+
+    private fun createBulletTextView(text: String): TextView {
+        return TextView(this).apply {
+            this.text = "• $text"
+            textSize = 14f
+            setTextColor(getColor(android.R.color.black))
+            setPadding(0, 8, 0, 8)
+            typeface = resources.getFont(R.font.quicksand)
+        }
     }
 
     private fun setupBottomNavigation() {
         setActiveNav(binding.navInformasi)
 
         binding.navBeranda.setOnClickListener {
-            finish() // Kembali ke MainActivity
+            finish()
         }
 
         binding.navInformasi.setOnClickListener {
-            setActiveNav(binding.navInformasi)
+            finish()
         }
 
         binding.navRiwayat.setOnClickListener {
             setActiveNav(binding.navRiwayat)
-            // startActivity(Intent(this, HistoryActivity::class.java))
         }
 
         binding.navProfil.setOnClickListener {
             setActiveNav(binding.navProfil)
-            // startActivity(Intent(this, ProfileActivity::class.java))
         }
     }
 
