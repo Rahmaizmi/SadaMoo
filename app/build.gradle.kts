@@ -57,4 +57,21 @@ dependencies {
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
+    // Camera
+    implementation("androidx.camera:camera-core:1.3.1")
+    implementation("androidx.camera:camera-camera2:1.3.1")
+    implementation("androidx.camera:camera-lifecycle:1.3.1")
+    implementation("androidx.camera:camera-view:1.3.1")
+// Image processing (optional untuk ML)
+    implementation("androidx.camera:camera-extensions:1.3.1")
+
+    // Guava untuk CameraX - INI YANG PENTING
+    implementation("com.google.guava:guava:31.1-android")
+
+    // Concurrent Futures
+    implementation("androidx.concurrent:concurrent-futures:1.1.0")
+
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

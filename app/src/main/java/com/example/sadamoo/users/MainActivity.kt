@@ -5,19 +5,20 @@ import android.graphics.Color
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-
 import com.google.firebase.firestore.FirebaseFirestore
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.sadamoo.databinding.ActivityMainBinding
+import com.example.sadamoo.users.SapiPagerAdapter
 import com.google.firebase.auth.FirebaseAuth
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         // Load user info
         loadUserInfo()
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         // Setup navigation
         setupBottomNavigation()
     }
+
 
     override fun onStart() {
         super.onStart()
@@ -100,9 +103,12 @@ class MainActivity : AppCompatActivity() {
         // Default: Beranda aktif
         setActiveNav(binding.navBeranda)
 
-//        binding.fabDeteksi.setOnClickListener {
-//            startActivity(Intent(this, CameraScanActivity::class.java))
-//        }
+        binding.fabDeteksi.setOnClickListener {
+            Log.d("MainActivity", "🔥 FAB Deteksi DIKLIK!")
+            android.widget.Toast.makeText(this, "Tombol scan diklik!", android.widget.Toast.LENGTH_SHORT).show()
+            checkScanPermission()
+        }
+
 
         binding.navBeranda.setOnClickListener {
             setActiveNav(binding.navBeranda)
@@ -123,6 +129,67 @@ class MainActivity : AppCompatActivity() {
             // startActivity(Intent(this, ProfileActivity::class.java))
         }
     }
+
+    private fun checkScanPermission() {
+        Log.d("MainActivity", "🔍 checkScanPermission() dipanggil")
+
+        // Sementara langsung ke camera untuk testing
+        android.widget.Toast.makeText(this, "Mencoba membuka camera...", android.widget.Toast.LENGTH_SHORT).show()
+        startCameraScan()
+
+
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            firestore.collection("users").document(currentUser.uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val subscriptionStatus = document.getString("subscriptionStatus") ?: "trial"
+                        val trialStartDate = document.getTimestamp("trialStartDate")
+
+                        when (subscriptionStatus) {
+                            "trial" -> {
+                                if (isTrialExpired(trialStartDate)) {
+                                    showUpgradeDialog()
+                                } else {
+                                    startCameraScan()
+                                }
+                            }
+                            "active" -> startCameraScan()
+                            "expired" -> showUpgradeDialog()
+                            else -> startCameraScan()
+                        }
+                    } else {
+                        startCameraScan()
+                    }
+                }
+                .addOnFailureListener {
+                    startCameraScan()
+                }
+        }
+
+    }
+
+
+    private fun isTrialExpired(trialStartDate: com.google.firebase.Timestamp?): Boolean {
+        if (trialStartDate == null) return false
+
+        val currentTime = System.currentTimeMillis()
+        val trialStart = trialStartDate.toDate().time
+        val sevenDaysInMillis = 7 * 24 * 60 * 60 * 1000L
+
+        return (currentTime - trialStart) > sevenDaysInMillis
+    }
+
+    private fun startCameraScan() {
+        startActivity(Intent(this, CameraScanActivity::class.java))
+    }
+
+    private fun showUpgradeDialog() {
+        // TODO: Show premium upgrade dialog
+        android.widget.Toast.makeText(this, "Trial expired! Please upgrade to continue.", android.widget.Toast.LENGTH_LONG).show()
+    }
+
 
     private fun setActiveNav(activeNav: LinearLayout) {
         val allNavs =
