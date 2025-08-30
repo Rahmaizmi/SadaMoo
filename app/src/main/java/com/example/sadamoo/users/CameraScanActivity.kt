@@ -34,11 +34,10 @@ class CameraScanActivity : AppCompatActivity() {
 
         // Check camera permissions
         if (allPermissionsGranted()) {
-            startCamera()
+            startCamera() // langsung start kalau sudah ada izin
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
         // Setup UI
         setupUI()
 

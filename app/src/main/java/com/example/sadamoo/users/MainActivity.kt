@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
 
         // Sementara langsung ke camera untuk testing
         android.widget.Toast.makeText(this, "Mencoba membuka camera...", android.widget.Toast.LENGTH_SHORT).show()
-        startCameraScan()
+//        startCameraScan()
 
 
         val currentUser = auth.currentUser
