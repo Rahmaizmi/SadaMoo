@@ -54,6 +54,9 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".users.ScanResultActivity" />
+        <activity android:name=".users.HistoryActivity" />
+        <activity android:name=".users.ChatConsultationActivity" />
+
 
     </application>
 

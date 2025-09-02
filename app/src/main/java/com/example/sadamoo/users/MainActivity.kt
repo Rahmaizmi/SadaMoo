@@ -121,7 +121,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.navRiwayat.setOnClickListener {
             setActiveNav(binding.navRiwayat)
-            // startActivity(Intent(this, HistoryActivity::class.java))
+            startActivity(Intent(this, HistoryActivity::class.java))
         }
 
         binding.navProfil.setOnClickListener {

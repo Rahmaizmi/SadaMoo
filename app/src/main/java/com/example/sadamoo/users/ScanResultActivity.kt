@@ -7,6 +7,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.sadamoo.R
 import com.example.sadamoo.databinding.ActivityScanResultBinding
+import androidx.core.content.res.ResourcesCompat
+
 
 class ScanResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScanResultBinding
@@ -286,7 +288,7 @@ class ScanResultActivity : AppCompatActivity() {
             textSize = 14f
             setTextColor(getColor(android.R.color.black))
             setPadding(0, 4, 0, 4)
-            typeface = resources.getFont(R.font.quicksand)
+            typeface = ResourcesCompat.getFont(this@ScanResultActivity, R.font.quicksand)
         }
     }
 
@@ -301,9 +303,13 @@ class ScanResultActivity : AppCompatActivity() {
         }
 
         binding.navConsultation.setOnClickListener {
-            // TODO: Check subscription status
-            Toast.makeText(this, "Fitur konsultasi - Upgrade ke Premium!", Toast.LENGTH_SHORT).show()
-            // TODO: Navigate to consultation or upgrade dialog
+            // Check subscription status
+            val intent = Intent(this, ChatConsultationActivity::class.java).apply {
+                putExtra("doctor_name", "Dr. Ahmad Veteriner")
+                putExtra("consultation_id", "new_consultation")
+            }
+            startActivity(intent)
         }
+
     }
 }
