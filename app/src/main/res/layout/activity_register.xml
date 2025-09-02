@@ -90,7 +90,7 @@
         android:layout_marginBottom="24dp" />
 
     <!-- Tombol Daftar -->
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnDaftar"
         android:layout_width="150dp"
         android:layout_height="45dp"
